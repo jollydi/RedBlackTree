@@ -66,7 +66,9 @@ public class RedBlackTree<T extends Comparable<? super T>> implements Iterable<R
 		} else {
 			return false;
 		}
-		root.color = Color.BLACK;
+		if (root != null) {
+			root.color = Color.BLACK;
+		}
 		return b.getValue();
 	}
 
@@ -152,6 +154,7 @@ public class RedBlackTree<T extends Comparable<? super T>> implements Iterable<R
 				} else {
 					root = GP.singleRightRotation();
 				}
+				rotationCount++;
 				P.colorChange();
 				GP.colorChange();
 				return "SR";
@@ -167,6 +170,7 @@ public class RedBlackTree<T extends Comparable<? super T>> implements Iterable<R
 				} else {
 					root = GP.singleLeftRotation();
 				}
+				rotationCount++;
 				P.colorChange();
 				GP.colorChange();
 				return "SL";
@@ -183,6 +187,7 @@ public class RedBlackTree<T extends Comparable<? super T>> implements Iterable<R
 				} else {
 					root = GP.singleRightRotation();
 				}
+				rotationCount += 2;
 				this.colorChange();
 				GP.colorChange();
 				return "DR";
@@ -199,6 +204,7 @@ public class RedBlackTree<T extends Comparable<? super T>> implements Iterable<R
 				} else {
 					root = GP.singleLeftRotation();
 				}
+				rotationCount += 2;
 				this.colorChange();
 				GP.colorChange();
 				return "DL";
@@ -284,14 +290,22 @@ public class RedBlackTree<T extends Comparable<? super T>> implements Iterable<R
 		}
 
 		public void removeStep2A2(T o, MyBoolean b, BinaryNode P, BinaryNode T, BinaryNode GP) {
-			if (this.equals(P.leftChild)) {
+			if (GP == null) {
+				if (this.equals(P.leftChild)) {
+					P.rightChild = T.singleRightRotation();
+					root = P.singleLeftRotation();
+				} else {
+					P.leftChild = T.singleLeftRotation();
+					root = P.singleRightRotation();
+				}
+			} else if (this.equals(P.leftChild)) {
 				P.rightChild = T.singleRightRotation();
 				if (P.equals(GP.leftChild)) {
 					GP.leftChild = P.singleLeftRotation();
 				} else {
 					GP.rightChild = P.singleLeftRotation();
 				}
-				doubleRotationCount++;
+				rotationCount += 2;
 			} else {
 				P.leftChild = T.singleLeftRotation();
 				if (P.equals(GP.leftChild)) {
@@ -299,7 +313,7 @@ public class RedBlackTree<T extends Comparable<? super T>> implements Iterable<R
 				} else {
 					GP.rightChild = P.singleRightRotation();
 				}
-				doubleRotationCount++;
+				rotationCount += 2;
 			}
 			colorChange();
 			P.colorChange();
@@ -333,15 +347,19 @@ public class RedBlackTree<T extends Comparable<? super T>> implements Iterable<R
 					} else {
 						GP.rightChild = P.singleLeftRotation();
 					}
-					rotationCount++;
 				} else {
 					root = P.singleLeftRotation();
 				}
+				rotationCount++;
 			} else {
-				if (P.equals(GP.leftChild)) {
-					GP.leftChild = P.singleRightRotation();
+				if (GP != null) {
+					if (P.equals(GP.leftChild)) {
+						GP.leftChild = P.singleRightRotation();
+					} else {
+						GP.rightChild = P.singleRightRotation();
+					}
 				} else {
-					GP.rightChild = P.singleRightRotation();
+					root = P.singleRightRotation();
 				}
 				rotationCount++;
 			}
@@ -366,9 +384,9 @@ public class RedBlackTree<T extends Comparable<? super T>> implements Iterable<R
 			} else if (comparisonResult < 0) {
 				if (rightChild != null) {
 					if (rightChild.color == Color.RED) {
-						rightChild.removeStep2B1(o, b, P, T, GP);
+						rightChild.removeStep2B1(o, b, this, leftChild, P);
 					} else {
-						rightChild.removeStep2B2(o, b, P, T, GP);
+						rightChild.removeStep2B2(o, b, this, leftChild, P);
 					}
 				}
 			} else {
@@ -376,7 +394,7 @@ public class RedBlackTree<T extends Comparable<? super T>> implements Iterable<R
 					if (leftChild.color == Color.RED) {
 						leftChild.removeStep2B1(o, b, this, rightChild, P);
 					} else {
-						leftChild.removeStep2B2(o, b, this, leftChild, P);
+						leftChild.removeStep2B2(o, b, this, rightChild, P);
 					}
 				}
 			}
@@ -397,14 +415,21 @@ public class RedBlackTree<T extends Comparable<? super T>> implements Iterable<R
 			}
 		}
 
-		public void removeStep2B2(T o, MyBoolean b, BinaryNode P, BinaryNode GP, BinaryNode T) {
-			if (P != null) {
-				P.colorChange();
-			}
-			if (T != null) {
-				T.colorChange();
-			}
-			if (P.equals(GP.leftChild)) {
+		public void removeStep2B2(T o, MyBoolean b, BinaryNode P, BinaryNode T, BinaryNode GP) {
+			P.colorChange();
+			T.colorChange();
+			if (P.equals(root)) {
+				if (this.equals(P.leftChild)) {
+					root = P.singleLeftRotation();
+					GP = T;
+					T = T.leftChild;
+				} else {
+					root = P.singleRightRotation();
+					GP = T;
+					T = T.rightChild;
+				}
+				rotationCount++;
+			} else if (P.equals(GP.leftChild)) {
 				if (this.equals(P.leftChild)) {
 					GP.leftChild = P.singleLeftRotation();
 					GP = T;
@@ -419,9 +444,7 @@ public class RedBlackTree<T extends Comparable<? super T>> implements Iterable<R
 				if (this.equals(P.leftChild)) {
 					GP.rightChild = P.singleLeftRotation();
 					GP = T;
-					if (T != null) {
-						T = T.leftChild;
-					}
+					T = T.leftChild;
 				} else {
 					GP.rightChild = P.singleRightRotation();
 					GP = T;
@@ -429,6 +452,7 @@ public class RedBlackTree<T extends Comparable<? super T>> implements Iterable<R
 				}
 				rotationCount++;
 			}
+
 			this.removeStep2(o, b, P, T, GP);
 		}
 
@@ -444,23 +468,48 @@ public class RedBlackTree<T extends Comparable<? super T>> implements Iterable<R
 					this.element = temp;
 				}
 			} else if (leftChild == null && rightChild == null) {
-				if (this.equals(P.leftChild)) {
+				if (size == 1) {
+					root = null;
+				} else if (this.equals(P.leftChild)) {
 					P.leftChild = null;
 				} else {
 					P.rightChild = null;
 				}
 			} else if (leftChild == null || rightChild == null) {
-				if (leftChild == null) {
-					element = rightChild.element;
-					color = rightChild.color;
-					rightChild = null;
+				if (this.equals(root)) {
+					if (leftChild == null) {
+						if (rightChild.color == Color.RED) {
+							rightChild.color = Color.BLACK;
+							root = rightChild;
+						}
+					} else {
+						if (leftChild.color == Color.RED) {
+							leftChild.color = Color.BLACK;
+							root = leftChild;
+						}
+					}
+				} else if (leftChild == null) {
+					if (rightChild.color == Color.RED) {
+						rightChild.color = Color.BLACK;
+						if (this.equals(P.rightChild)) {
+							P.rightChild = rightChild;
+						} else {
+							P.leftChild = rightChild;
+						}
+					}
 				} else {
-					element = leftChild.element;
-					color = leftChild.color;
-					leftChild = null;
+					if (leftChild.color == Color.RED) {
+						leftChild.color = Color.BLACK;
+						if (this.equals(P.rightChild)) {
+							P.rightChild = leftChild;
+						} else {
+							P.leftChild = leftChild;
+						}
+					}
 				}
 			}
-			root.color = Color.BLACK;
+			b.setTrue();
+			size--;
 		}
 
 		public BinaryNode getLargestNode() {
@@ -484,7 +533,6 @@ public class RedBlackTree<T extends Comparable<? super T>> implements Iterable<R
 			} else {
 				leftChild = null;
 			}
-			rotationCount++;
 			return temp2;
 		}
 
@@ -497,7 +545,6 @@ public class RedBlackTree<T extends Comparable<? super T>> implements Iterable<R
 			} else {
 				this.rightChild = null;
 			}
-			rotationCount++;
 			return temp2;
 		}
 

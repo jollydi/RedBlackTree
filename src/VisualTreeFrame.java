@@ -46,8 +46,16 @@ public class VisualTreeFrame extends JFrame {
 		b = new RedBlackTree<Integer>();
 		
 		// Construct your tree HERE
+		b.insert(20);
+		b.insert(10);
+		b.insert(30);
+		b.insert(5);
+		b.insert(15);
+		b.insert(40);
+		b.insert(5);
 		
 		new VisualTreeFrame();
+		
 
 	}
 	
